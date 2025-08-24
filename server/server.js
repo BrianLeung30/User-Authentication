@@ -10,9 +10,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 connectDB();
 
+const allowedOrigins = [process.env.FRONTEND_URL];
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true }));
+app.use(cors({ credentials: true, origin: allowedOrigins }));
 
 //API Endpoints
 app.get("/", (req, res) => {
