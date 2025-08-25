@@ -2,6 +2,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
+import {
+  EMAIL_VERIFY_TEMPLATE,
+  WELCOME_TEMPLATE,
+  PASSWORD_RESET_TEMPLATE,
+} from "../config/emailTemplate.js";
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -33,12 +38,11 @@ export const register = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Sending welcome email
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: email,
       subject: "Welcome to AI Calorie Tracker",
-      text: `Hello ${name},\n\nThank you for registering at AI Calorie Tracker. We're excited to have you on board!\n\nBest regards,\nThe AI Calorie Tracker Team`,
+      html: WELCOME_TEMPLATE(name),
     };
 
     await transporter.sendMail(mailOptions);
@@ -100,7 +104,6 @@ export const logout = async (req, res) => {
   }
 };
 
-//Send verification OTP to user email
 export const sendVerifyOtp = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -121,7 +124,7 @@ export const sendVerifyOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Verify your email",
-      text: `Your verification code is: ${otp}`,
+      html: EMAIL_VERIFY_TEMPLATE(otp),
     };
 
     await transporter.sendMail(mailOptions);
@@ -170,7 +173,6 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-//Check if user is authenticated
 export const isAuthenticated = async (req, res) => {
   try {
     return res.json({ success: true });
@@ -179,7 +181,6 @@ export const isAuthenticated = async (req, res) => {
   }
 };
 
-//Send Password reset OTP
 export const sendResetOtp = async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -201,7 +202,7 @@ export const sendResetOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Password Reset OTP",
-      text: `Your password reset OTP is: ${otp}`,
+      html: PASSWORD_RESET_TEMPLATE(otp),
     };
 
     await transporter.sendMail(mailOptions);
