@@ -5,8 +5,10 @@ import axios from "axios";
 export const AppContext = createContext();
 
 export const AppContextProvider = (props) => {
+  axios.defaults.withCredentials = true;
+
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const [isLoggedin, setIsLoggedin] = useState(false);
+  const [isLoggedin, setIsLoggedin] = useState(null);
   const [userData, setUserData] = useState(false);
 
   const getAuthState = async () => {
@@ -14,9 +16,12 @@ export const AppContextProvider = (props) => {
       const { data } = await axios.get(backendUrl + "/api/auth/is-auth");
       if (data.success) {
         setIsLoggedin(true);
-        getUserData();
+        await getUserData();
+      } else {
+        setIsLoggedin(false);
       }
     } catch (error) {
+      setIsLoggedin(false);
       toast.error(error.message);
     }
   };
@@ -25,7 +30,6 @@ export const AppContextProvider = (props) => {
     try {
       const { data } = await axios.get(backendUrl + "/api/user/data");
       data.success ? setUserData(data.userData) : toast.error(data.message);
-      console.log("here");
     } catch (error) {
       toast.error(error.message);
     }
